@@ -1,0 +1,44 @@
+---
+- name: user creation
+  hosts: all
+  become: true
+  vars_prompt:
+   - name: username
+     prompt: Chose a name of the user you want to create
+     private: no
+
+   - name: password
+     prompt: Chose a password of the user you want to create
+     private: yes
+
+
+
+
+
+  tasks:
+
+   - name: test user
+     shell: cat /etc/passwd
+     register: passwd_contents
+   - name:
+     debug:
+       msg: echo "passwd contains user {{ username }}"
+     when: passwd_contents.stdout.find(username) != -1
+
+
+
+
+   - name: user example present
+     ansible.builtin.user:
+       name: "{{ username }}"
+       password: "{{ password |  password_hash('sha512') }}"
+       groups:
+         - wheel
+         - adm
+       state: "present"
+       shell: "/bin/bash"
+       system: false
+       create_home: true
+         #home: "/home/""{{ username }}""
+       comment: " new user "
+       generate_ssh_key: true
